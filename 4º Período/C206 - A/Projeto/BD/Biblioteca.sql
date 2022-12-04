@@ -15,14 +15,15 @@ CREATE SCHEMA IF NOT EXISTS `Biblioteca` DEFAULT CHARACTER SET utf8 ;
 USE `Biblioteca` ;
 
 -- -----------------------------------------------------
--- Table `Biblioteca`.`Usuário`
+-- Table `Biblioteca`.`Usuario`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Biblioteca`.`Usuário` (
-  `cpf` VARCHAR(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `Biblioteca`.`Usuario` (
+  `idUsuario` INT AUTO_INCREMENT,
+  `cpf` VARCHAR(12) NOT NULL,
   `nomeCompleto` VARCHAR(100) NOT NULL,
   `idade` INT NOT NULL,
-  `celular` INT NOT NULL,
-  PRIMARY KEY (`cpf`))
+  `celular` VARCHAR(15) NOT NULL,
+  PRIMARY KEY (`idUsuario`))
 ENGINE = InnoDB;
 
 
@@ -30,17 +31,16 @@ ENGINE = InnoDB;
 -- Table `Biblioteca`.`Conta`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `Biblioteca`.`Conta` (
-  `idConta` INT NOT NULL AUTO_INCREMENT,
+  `idConta` INT AUTO_INCREMENT,
   `user` VARCHAR(30) NOT NULL,
   `senha` VARCHAR(40) NOT NULL,
-  `Usuário_cpf` VARCHAR(11) NOT NULL,
+  `Usuario_idUsuario` INT,
   PRIMARY KEY (`idConta`),
-  INDEX `fk_Conta_Usuário_idx` (`Usuário_cpf` ASC) VISIBLE,
-  CONSTRAINT `fk_Conta_Usuário`
-    FOREIGN KEY (`Usuário_cpf`)
-    REFERENCES `Biblioteca`.`Usuário` (`cpf`)
+  CONSTRAINT `fk_Conta_Usuario1`
+    FOREIGN KEY (`Usuario_idUsuario`)
+    REFERENCES `Biblioteca`.`Usuario` (`idUsuario`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
@@ -48,37 +48,10 @@ ENGINE = InnoDB;
 -- Table `Biblioteca`.`Acervo`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `Biblioteca`.`Acervo` (
-  `idAcervo` INT NOT NULL AUTO_INCREMENT,
-  `numRegistro` INT NOT NULL,
+  `idAcervo` INT AUTO_INCREMENT,
   `cdu` VARCHAR(45) NOT NULL,
-  `título` VARCHAR(45) NOT NULL,
+  `titulo` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idAcervo`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `Biblioteca`.`Conta_fazEmpréstimo_Acervo`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Biblioteca`.`Conta_fazEmpréstimo_Acervo` (
-  `Acervo_idAcervo` INT NOT NULL,
-  `Conta_idConta` INT NOT NULL,
-  `dataEmpréstimo` VARCHAR(15) NOT NULL,
-  `dataDevolução` VARCHAR(15) NOT NULL,
-  `itens` VARCHAR(100) NOT NULL,
-  `qtdRenovados` INT NOT NULL,
-  PRIMARY KEY (`Acervo_idAcervo`, `Conta_idConta`),
-  INDEX `fk_Acervo_has_Conta_Conta1_idx` (`Conta_idConta` ASC) VISIBLE,
-  INDEX `fk_Acervo_has_Conta_Acervo1_idx` (`Acervo_idAcervo` ASC) VISIBLE,
-  CONSTRAINT `fk_Acervo_has_Conta_Acervo1`
-    FOREIGN KEY (`Acervo_idAcervo`)
-    REFERENCES `Biblioteca`.`Acervo` (`idAcervo`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Acervo_has_Conta_Conta1`
-    FOREIGN KEY (`Conta_idConta`)
-    REFERENCES `Biblioteca`.`Conta` (`idConta`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
@@ -86,25 +59,17 @@ ENGINE = InnoDB;
 -- Table `Biblioteca`.`Livro`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `Biblioteca`.`Livro` (
-  `idLivro` INT NOT NULL AUTO_INCREMENT,
+  `idLivro` INT AUTO_INCREMENT,
   `autor` VARCHAR(100) NOT NULL,
   `editora` VARCHAR(100) NOT NULL,
   `edição` VARCHAR(100) NOT NULL,
-  `Conta_idConta` INT NOT NULL,
-  `Acervo_idAcervo` INT NOT NULL,
+  `Acervo_idAcervo` INT,
   PRIMARY KEY (`idLivro`),
-  INDEX `fk_Livro_Conta1_idx` (`Conta_idConta` ASC) VISIBLE,
-  INDEX `fk_Livro_Acervo1_idx` (`Acervo_idAcervo` ASC) VISIBLE,
-  CONSTRAINT `fk_Livro_Conta1`
-    FOREIGN KEY (`Conta_idConta`)
-    REFERENCES `Biblioteca`.`Conta` (`idConta`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
   CONSTRAINT `fk_Livro_Acervo1`
     FOREIGN KEY (`Acervo_idAcervo`)
     REFERENCES `Biblioteca`.`Acervo` (`idAcervo`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
@@ -112,17 +77,16 @@ ENGINE = InnoDB;
 -- Table `Biblioteca`.`Revista`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `Biblioteca`.`Revista` (
-  `idRevista` INT NOT NULL AUTO_INCREMENT,
+  `idRevista` INT AUTO_INCREMENT,
   `editora` VARCHAR(100) NOT NULL,
   `ano` INT NOT NULL,
-  `Acervo_idAcervo` INT NOT NULL,
+  `Acervo_idAcervo` INT NULL,
   PRIMARY KEY (`idRevista`),
-  INDEX `fk_Revista_Acervo1_idx` (`Acervo_idAcervo` ASC) VISIBLE,
   CONSTRAINT `fk_Revista_Acervo1`
     FOREIGN KEY (`Acervo_idAcervo`)
     REFERENCES `Biblioteca`.`Acervo` (`idAcervo`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
@@ -130,16 +94,38 @@ ENGINE = InnoDB;
 -- Table `Biblioteca`.`Artigo`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `Biblioteca`.`Artigo` (
-  `idArtigo` INT NOT NULL AUTO_INCREMENT,
+  `idArtigo` INT AUTO_INCREMENT,
   `autor` VARCHAR(100) NOT NULL,
-  `Acervo_idAcervo` INT NOT NULL,
+  `Acervo_idAcervo` INT,
   PRIMARY KEY (`idArtigo`),
-  INDEX `fk_Artigo_Acervo1_idx` (`Acervo_idAcervo` ASC) VISIBLE,
   CONSTRAINT `fk_Artigo_Acervo1`
     FOREIGN KEY (`Acervo_idAcervo`)
     REFERENCES `Biblioteca`.`Acervo` (`idAcervo`)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `Biblioteca`.`Acervo_fazEmprestimo_Conta`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Biblioteca`.`Acervo_fazEmprestimo_Conta` (
+  `Conta_idConta` INT,
+  `Acervo_idAcervo` INT,
+  `user` VARCHAR(30) NOT NULL,
+  `dataEmprestimo` VARCHAR(30) NOT NULL,
+  `dataDevolucao` VARCHAR(30) NOT NULL,
+  PRIMARY KEY (`Conta_idConta`, `Acervo_idAcervo`),
+  CONSTRAINT `fk_Conta_has_Acervo_Conta1`
+    FOREIGN KEY (`Conta_idConta`)
+    REFERENCES `Biblioteca`.`Conta` (`idConta`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Conta_has_Acervo_Acervo1`
+    FOREIGN KEY (`Acervo_idAcervo`)
+    REFERENCES `Biblioteca`.`Acervo` (`idAcervo`)
+    ON DELETE NO ACTION
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
